@@ -72,19 +72,18 @@ public class SshServer : IDisposable
 		IPAddress? localAddress = null)
 	{
 		localAddress ??= IPAddress.Any;
-		string portPrefix = localAddress.Equals(IPAddress.Any) ?
-			"port " : localAddress.ToString() + ":";
+		string portPrefix = localAddress.Equals(IPAddress.Any) ? "port " : localAddress.ToString() + ":";
 
 		TcpListener listener;
 		try
 		{
 			listener = await TcpListenerFactory.CreateTcpListenerAsync(
-				remotePort: null,
-				localAddress,
-				localPort,
-				canChangeLocalPort: false,
-				this.trace,
-				CancellationToken.None)
+					remotePort: null,
+					localAddress,
+					localPort,
+					canChangeLocalPort: false,
+					this.trace,
+					CancellationToken.None)
 				.ConfigureAwait(false);
 		}
 		catch (SocketException sockex)
@@ -108,7 +107,7 @@ public class SshServer : IDisposable
 			{
 				while (true)
 				{
-					var stream = await AcceptConnectionAsync(listener).ConfigureAwait(false);
+					(var stream, var endpoint) = await AcceptConnectionAsync(listener).ConfigureAwait(false);
 					if (stream == null)
 					{
 						// The server was disposed.
@@ -121,7 +120,7 @@ public class SshServer : IDisposable
 						$"{nameof(SshServer)} client connected.");
 
 					var session = new SshServerSession(
-						this.config, this.reconnectableSessions, this.trace);
+						this.config, this.reconnectableSessions, endpoint, this.trace);
 					session.Credentials = Credentials;
 
 					lock (this.sessionsLock)
@@ -129,23 +128,14 @@ public class SshServer : IDisposable
 						this.sessions.Add(session);
 					}
 
-					session.Authenticating += (s, e) =>
-					{
-						SessionAuthenticating?.Invoke(s, e);
-					};
-					session.Request += (s, e) =>
-					{
-						SessionRequest?.Invoke(s, e);
-					};
+					session.Authenticating += (s, e) => { SessionAuthenticating?.Invoke(s, e); };
+					session.Request += (s, e) => { SessionRequest?.Invoke(s, e); };
 					session.ChannelOpening += (s, e) =>
 					{
 						ChannelOpening?.Invoke(this, e);
 						if (e.FailureReason == SshChannelOpenFailureReason.None)
 						{
-							e.Channel.Request += (cs, ce) =>
-							{
-								ChannelRequest?.Invoke(cs, ce);
-							};
+							e.Channel.Request += (cs, ce) => { ChannelRequest?.Invoke(cs, ce); };
 						}
 					};
 					session.Closed += (s, e) =>
@@ -171,7 +161,7 @@ public class SshServer : IDisposable
 						catch (Exception ex)
 						{
 							await session.CloseAsync(SshDisconnectReason.ProtocolError, ex)
-							.ConfigureAwait(false);
+								.ConfigureAwait(false);
 							ExceptionRaised?.Invoke(this, ex);
 						}
 					});
@@ -188,7 +178,7 @@ public class SshServer : IDisposable
 		}
 	}
 
-	protected virtual async Task<Stream?> AcceptConnectionAsync(TcpListener listener)
+	protected virtual async Task<(Stream? Stream, EndPoint? Endpoint)> AcceptConnectionAsync(TcpListener listener)
 	{
 		TcpClient tcpClient;
 		try
@@ -199,18 +189,18 @@ public class SshServer : IDisposable
 		catch (SocketException) when (this.disposeCancellationSource.IsCancellationRequested)
 		{
 			// The server was disposed.
-			return null;
+			return (null, null);
 		}
 		catch (ObjectDisposedException) when (this.disposeCancellationSource.IsCancellationRequested)
 		{
 			// The server was disposed.
-			return null;
+			return (null, null);
 		}
 
 		tcpClient.Client.ConfigureSocketOptionsForSsh();
 
 		NetworkStream stream = tcpClient.GetStream();
-		return stream;
+		return (stream, tcpClient.Client.RemoteEndPoint);
 	}
 
 	public void Dispose()
@@ -231,7 +221,7 @@ public class SshServer : IDisposable
 			{
 				// The cancellation source was already disposed.
 			}
-			
+
 			this.disposeCancellationSource.Dispose();
 
 			foreach (SshServerSession serverSession in this.sessions.ToArray())

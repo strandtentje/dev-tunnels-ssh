@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DevTunnels.Ssh.Messages;
@@ -22,11 +23,13 @@ public class SshServerSession : SshSession
 	/// Constructs a new server session.
 	/// </summary>
 	/// <param name="config">Session configuration.</param>
+	/// <param name="remoteEndpoint">Remote endpoint that is responsible for initially opening this SshServerSession</param>
 	/// <param name="trace">Trace source for the session.</param>
 	public SshServerSession(
 		SshSessionConfiguration config,
+		EndPoint? remoteEndpoint,
 		TraceSource trace)
-		: this(config, reconnectableSessions: null, trace)
+		: this(config, reconnectableSessions: null, remoteEndpoint, trace)
 	{
 	}
 
@@ -36,10 +39,12 @@ public class SshServerSession : SshSession
 	/// <param name="config">Session configuration.</param>
 	/// <param name="reconnectableSessions">Collection that tracks server sessions
 	/// available for reconnection.</param>
+	/// <param name="remoteEndpoint">Remote endpoint that is responsible for initially opening this SshServerSession</param>
 	/// <param name="trace">Trace source for the session.</param>
 	public SshServerSession(
 		SshSessionConfiguration config,
 		ICollection<SshServerSession>? reconnectableSessions,
+		EndPoint? remoteEndpoint,
 		TraceSource trace)
 		: base(config, trace)
 	{
@@ -51,24 +56,30 @@ public class SshServerSession : SshSession
 		{
 			throw new ArgumentException(
 				"When reconnect is enabled, server sessions require a reference to a " +
-					"shared collection to track reconnectable sessions.",
+				"shared collection to track reconnectable sessions.",
 				nameof(reconnectableSessions));
 		}
 		else if (!enableReconnect && reconnectableSessions != null)
 		{
 			throw new ArgumentException(
 				"When reconnect is not enabled, the reconnectable sessions collection " +
-					"is not applicable.",
+				"is not applicable.",
 				nameof(reconnectableSessions));
 		}
 
 		this.reconnectableSessions = reconnectableSessions;
+		this.RemoteEndpoint = remoteEndpoint;
 	}
 
 	/// <summary>
 	/// Gets or sets credentials and/or credential callbacks for authenticating the session.
 	/// </summary>
 	public SshServerCredentials Credentials { get; set; } = new SshServerCredentials();
+
+	/// <summary>
+	/// Remote EndPoint that initially opened the current Session with the SshServer.
+	/// </summary>
+	public EndPoint? RemoteEndpoint { get; }
 
 	/// <summary>
 	/// Event raised after the server has successfully authenticated the client.
@@ -127,7 +138,7 @@ public class SshServerSession : SshSession
 		SessionRequestMessage message, CancellationToken cancellation)
 	{
 		if (message.RequestType == ExtensionRequestTypes.SessionReconnect &&
-			this.Config.ProtocolExtensions.Contains(SshProtocolExtensionNames.SessionReconnect))
+		    this.Config.ProtocolExtensions.Contains(SshProtocolExtensionNames.SessionReconnect))
 		{
 			var reconnectRequest = message.ConvertTo<SessionReconnectRequestMessage>();
 			await this.ReconnectAsync(reconnectRequest, cancellation).ConfigureAwait(false);
@@ -188,7 +199,7 @@ public class SshServerSession : SshSession
 		if (this.reconnectableSessions == null)
 		{
 			throw new InvalidOperationException("Disconnected sessions collection " +
-				"should have been initialized when reconnect is enabled.");
+			                                    "should have been initialized when reconnect is enabled.");
 		}
 
 		// Try to find the requested server session in the list of available disconnected
@@ -199,9 +210,9 @@ public class SshServerSession : SshSession
 			foreach (var reconnectableSession in this.reconnectableSessions)
 			{
 				if (reconnectableSession != this && VerifyReconnectToken(
-					reconnectableSession.SessionId!,
-					SessionId!,
-					reconnectRequest.ClientReconnectToken))
+					    reconnectableSession.SessionId!,
+					    SessionId!,
+					    reconnectRequest.ClientReconnectToken))
 				{
 					reconnectSession = reconnectableSession;
 					this.reconnectableSessions.Remove(reconnectSession);
@@ -213,7 +224,7 @@ public class SshServerSession : SshSession
 		if (reconnectSession == null || reconnectSession.IsClosed)
 		{
 			var message = "Requested reconnect session was not found " +
-				"or the client's reconnect token was invalid.";
+			              "or the client's reconnect token was invalid.";
 			Trace.TraceEvent(
 				TraceEventType.Warning,
 				SshTraceEventIds.ServerSessionReconnectFailed,
