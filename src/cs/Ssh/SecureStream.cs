@@ -75,6 +75,7 @@ public class SecureStream : Stream
 			reconnectableSessions != null ?
 				SshSessionConfiguration.DefaultWithReconnect : SshSessionConfiguration.Default,
 			reconnectableSessions,
+			null,
 			trace ?? new TraceSource(nameof(SecureStream)));
 
 		this.Session.Authenticating += OnSessionAuthenticating;

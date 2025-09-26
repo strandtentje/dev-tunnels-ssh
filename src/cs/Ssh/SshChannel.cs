@@ -11,13 +11,12 @@ using Microsoft.DevTunnels.Ssh.Metrics;
 using Microsoft.DevTunnels.Ssh.Services;
 
 namespace Microsoft.DevTunnels.Ssh;
-
 /// <summary>
 /// Represents a channel on an SSH session. A sesssion may include multiple channels, which
 /// are multiplexed over the connection. Each channel within a session has a unique integer ID.
 /// </summary>
 [DebuggerDisplay("{ToString(),nq}")]
-public class SshChannel : IDisposable
+public class SshChannel : IDisposable, IWindowingChannel
 {
 	/// <summary>
 	/// Default channel type.
@@ -576,6 +575,9 @@ public class SshChannel : IDisposable
 			this.TrySendAdjustWindowMessage(bytesToAdd);
 		}
 	}
+
+	/// <inheritdoc/>
+	void IWindowingChannel.IncreaseWindowSize(uint increment) => this.TrySendAdjustWindowMessage(increment);
 
 	/// <summary>
 	/// Tries to send a message informing the other end of the channel that more bytes
