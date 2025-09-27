@@ -11,6 +11,7 @@ using Microsoft.DevTunnels.Ssh.Metrics;
 using Microsoft.DevTunnels.Ssh.Services;
 
 namespace Microsoft.DevTunnels.Ssh;
+
 /// <summary>
 /// Represents a channel on an SSH session. A sesssion may include multiple channels, which
 /// are multiplexed over the connection. Each channel within a session has a unique integer ID.

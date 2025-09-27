@@ -1,4 +1,8 @@
 namespace Microsoft.DevTunnels.Ssh;
+
+/// <summary>
+/// Expose manual window size increase function via interface.
+/// </summary>
 public interface IWindowingChannel
 {
 	/// <summary>
