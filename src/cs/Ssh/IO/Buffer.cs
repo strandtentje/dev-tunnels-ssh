@@ -73,8 +73,8 @@ public struct Buffer : IEquatable<Buffer>, ICollection<byte>
 	public byte[] Array => this.array ?? EmptyArray;
 #pragma warning restore CA1819 // Properties should not return arrays
 
-	public int Offset { get; }
-	public int Count { get; }
+	public int Offset { get; set; }
+	public int Count { get; set; }
 
 	bool ICollection<byte>.IsReadOnly => false;
 
