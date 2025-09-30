@@ -36,7 +36,7 @@ public struct Buffer : IEquatable<Buffer>, ICollection<byte>
 
 	public Buffer(int size) : this(new byte[size], 0, size)
 	{
-#if DEBUG
+#if DEBUG && false
 		TrackAllocation(size);
 #endif
 	}
@@ -104,7 +104,7 @@ public struct Buffer : IEquatable<Buffer>, ICollection<byte>
 
 		System.Array.Copy(Array, Offset, other.Array, other.Offset + otherOffset, Count);
 
-#if DEBUG
+#if DEBUG && false
 		TrackCopy(Count);
 #endif
 	}
