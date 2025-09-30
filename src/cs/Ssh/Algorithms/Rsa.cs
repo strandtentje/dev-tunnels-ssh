@@ -127,8 +127,8 @@ public class Rsa : PublicKeyAlgorithm
 
 			var writer = new SshDataWriter();
 			writer.Write(algorithmName ?? KeyAlgorithmName, Encoding.ASCII);
-			writer.Write(BigInt.FromByteArray(args.Exponent!, unsigned: true));
-			writer.Write(BigInt.FromByteArray(args.Modulus!, unsigned: true));
+			writer.Write(BigInt.UnsignedBigEndianFromByteArray(args.Exponent!));
+			writer.Write(BigInt.UnsignedBigEndianFromByteArray(args.Modulus!));
 			return writer.ToBuffer();
 		}
 

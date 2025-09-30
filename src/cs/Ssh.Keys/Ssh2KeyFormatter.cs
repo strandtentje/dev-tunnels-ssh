@@ -329,12 +329,12 @@ public class Ssh2KeyFormatter : IKeyFormatter
 
 		var parameters = ((Rsa.KeyPair)keyPair).ExportParameters(true);
 
-		var exponent = BigInt.FromByteArray(parameters.Exponent!, unsigned: true);
-		var d = BigInt.FromByteArray(parameters.D!, unsigned: true);
-		var modulus = BigInt.FromByteArray(parameters.Modulus!, unsigned: true);
-		var iq = BigInt.FromByteArray(parameters.InverseQ!, unsigned: true);
-		var q = BigInt.FromByteArray(parameters.Q!, unsigned: true);
-		var p = BigInt.FromByteArray(parameters.P!, unsigned: true);
+		var exponent = BigInt.UnsignedBigEndianFromByteArray(parameters.Exponent!);
+		var d = BigInt.UnsignedBigEndianFromByteArray(parameters.D!);
+		var modulus = BigInt.UnsignedBigEndianFromByteArray(parameters.Modulus!);
+		var iq = BigInt.UnsignedBigEndianFromByteArray(parameters.InverseQ!);
+		var q = BigInt.UnsignedBigEndianFromByteArray(parameters.Q!);
+		var p = BigInt.UnsignedBigEndianFromByteArray(parameters.P!);
 
 		keyWriter.Write(exponent, lengthInBits: true);
 		keyWriter.Write(d, lengthInBits: true);

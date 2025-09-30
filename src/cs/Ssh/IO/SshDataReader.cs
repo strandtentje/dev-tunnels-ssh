@@ -111,7 +111,7 @@ public struct SshDataReader : IEquatable<SshDataReader>
 		}
 		else if (lengthInBits)
 		{
-			return BigInt.FromByteArray(data.ToArray(), unsigned: true);
+			return BigInt.UnsignedBigEndianFromByteArray(data.ToArray());
 		}
 		else
 		{

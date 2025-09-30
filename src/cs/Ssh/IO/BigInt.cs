@@ -145,10 +145,8 @@ public struct BigInt : IEquatable<BigInt>
 	/// the high bit of the high byte is the sign bit.</param>
 	/// <param name="littleEndian">True if the bytes are in little-endian order
 	/// (and therefore need to be swapped).</param>
-	public static BigInt FromByteArray(
-		byte[] bytes,
-		bool unsigned = false,
-		bool littleEndian = false)
+	public static BigInt SignedBigEndianFromByteArray(
+		byte[] bytes)
 	{
 		if (bytes == null)
 		{
@@ -160,48 +158,178 @@ public struct BigInt : IEquatable<BigInt>
 				"BigInt byte array length must be greater than zero.", nameof(bytes));
 		}
 
-		byte highByte = bytes[littleEndian ? bytes.Length - 1 : 0];
+		byte highByte = bytes[0];
 		bool highBit = (highByte & 0x80) != 0;
-		int prependZeroCount = unsigned && highBit ? 1 : 0;
+		int prependZeroCount = 0;
 		int skipZeroCount = 0;
 
 		byte[] newBytes;
-		if (littleEndian)
-		{
-			// Skip non-significant zeroes at the big end.
-			for (int i = bytes.Length - 1; i > 0 && bytes[i] == 0; i--)
-			{
-				if ((bytes[i - 1] & 0x80) == 0)
-				{
-					skipZeroCount++;
-				}
-			}
 
-			newBytes = new byte[bytes.Length + prependZeroCount - skipZeroCount];
-			Array.Copy(bytes, 0, newBytes, prependZeroCount, bytes.Length - skipZeroCount);
-			SwapByteOrder(newBytes, prependZeroCount, bytes.Length - skipZeroCount);
-		}
-		else
+		// Skip non-significant zeroes at the big end.
+		for (int i = 0; i < bytes.Length - 1 && bytes[i] == 0; i++)
 		{
-			// Skip non-significant zeroes at the big end.
-			for (int i = 0; i < bytes.Length - 1 && bytes[i] == 0; i++)
+			if ((bytes[i + 1] & 0x80) == 0)
 			{
-				if ((bytes[i + 1] & 0x80) == 0)
-				{
-					skipZeroCount++;
-				}
+				skipZeroCount++;
 			}
-
-			newBytes = new byte[bytes.Length + prependZeroCount - skipZeroCount];
-			Array.Copy(
-				bytes,
-				littleEndian ? 0 : skipZeroCount,
-				newBytes,
-				littleEndian ? 0 : prependZeroCount,
-				bytes.Length - skipZeroCount);
 		}
 
-#if DEBUG
+		newBytes = new byte[bytes.Length + prependZeroCount - skipZeroCount];
+		Array.Copy(
+			bytes,
+			skipZeroCount,
+			newBytes,
+			prependZeroCount,
+			bytes.Length - skipZeroCount);
+
+#if DEBUG && false
+		Buffer.TrackAllocation(newBytes.Length);
+		Buffer.TrackCopy(bytes.Length - skipZeroCount);
+#endif
+
+		return new BigInt(newBytes);
+	}
+	/// <summary>
+	/// Creates a new BigInt instance from a byte array.
+	/// </summary>
+	/// <param name="bytes">Source byte array.</param>
+	/// <param name="unsigned">True if the bytes should be interpreted as unsigned. If false,
+	/// the high bit of the high byte is the sign bit.</param>
+	/// <param name="littleEndian">True if the bytes are in little-endian order
+	/// (and therefore need to be swapped).</param>
+	public static BigInt UnsignedBigEndianFromByteArray(
+		byte[] bytes)
+	{
+		if (bytes == null)
+		{
+			throw new ArgumentNullException(nameof(bytes));
+		}
+		else if (bytes.Length == 0)
+		{
+			throw new ArgumentException(
+				"BigInt byte array length must be greater than zero.", nameof(bytes));
+		}
+
+		byte highByte = bytes[0];
+		bool highBit = (highByte & 0x80) != 0;
+		int prependZeroCount = highBit ? 1 : 0;
+		int skipZeroCount = 0;
+
+		byte[] newBytes;
+
+		// Skip non-significant zeroes at the big end.
+		for (int i = 0; i < bytes.Length - 1 && bytes[i] == 0; i++)
+		{
+			if ((bytes[i + 1] & 0x80) == 0)
+			{
+				skipZeroCount++;
+			}
+		}
+
+		newBytes = new byte[bytes.Length + prependZeroCount - skipZeroCount];
+		Array.Copy(
+			bytes,
+			skipZeroCount,
+			newBytes,
+			prependZeroCount,
+			bytes.Length - skipZeroCount);
+
+#if DEBUG && false
+		Buffer.TrackAllocation(newBytes.Length);
+		Buffer.TrackCopy(bytes.Length - skipZeroCount);
+#endif
+
+		return new BigInt(newBytes);
+	}
+	/// <summary>
+	/// Creates a new BigInt instance from a byte array.
+	/// </summary>
+	/// <param name="bytes">Source byte array.</param>
+	/// <param name="unsigned">True if the bytes should be interpreted as unsigned. If false,
+	/// the high bit of the high byte is the sign bit.</param>
+	/// <param name="littleEndian">True if the bytes are in little-endian order
+	/// (and therefore need to be swapped).</param>
+	public static BigInt SignedLittleEndianFromByteArray(byte[] bytes)
+	{
+		if (bytes == null)
+		{
+			throw new ArgumentNullException(nameof(bytes));
+		}
+		else if (bytes.Length == 0)
+		{
+			throw new ArgumentException(
+				"BigInt byte array length must be greater than zero.", nameof(bytes));
+		}
+
+		byte highByte = bytes[bytes.Length - 1];
+		bool highBit = (highByte & 0x80) != 0;
+		int prependZeroCount = 0;
+		int skipZeroCount = 0;
+
+		byte[] newBytes;
+
+		// Skip non-significant zeroes at the big end.
+		for (int i = bytes.Length - 1; i > 0 && bytes[i] == 0; i--)
+		{
+			if ((bytes[i - 1] & 0x80) == 0)
+			{
+				skipZeroCount++;
+			}
+		}
+
+		newBytes = new byte[bytes.Length + prependZeroCount - skipZeroCount];
+		Array.Copy(bytes, 0, newBytes, prependZeroCount, bytes.Length - skipZeroCount);
+		SwapByteOrder(newBytes, prependZeroCount, bytes.Length - skipZeroCount);
+
+#if DEBUG && true
+		Buffer.TrackAllocation(newBytes.Length);
+		Buffer.TrackCopy(bytes.Length - skipZeroCount);
+#endif
+
+		return new BigInt(newBytes);
+	}
+	/// <summary>
+	/// Creates a new BigInt instance from a byte array.
+	/// </summary>
+	/// <param name="bytes">Source byte array.</param>
+	/// <param name="unsigned">True if the bytes should be interpreted as unsigned. If false,
+	/// the high bit of the high byte is the sign bit.</param>
+	/// <param name="littleEndian">True if the bytes are in little-endian order
+	/// (and therefore need to be swapped).</param>
+	public static BigInt UnsignedLittleEndianFromByteArray(
+		byte[] bytes)
+	{
+		if (bytes == null)
+		{
+			throw new ArgumentNullException(nameof(bytes));
+		}
+		else if (bytes.Length == 0)
+		{
+			throw new ArgumentException(
+				"BigInt byte array length must be greater than zero.", nameof(bytes));
+		}
+
+		byte highByte = bytes[bytes.Length - 1];
+		bool highBit = (highByte & 0x80) != 0;
+		int prependZeroCount = highBit ? 1 : 0;
+		int skipZeroCount = 0;
+
+		byte[] newBytes;
+
+		// Skip non-significant zeroes at the big end.
+		for (int i = bytes.Length - 1; i > 0 && bytes[i] == 0; i--)
+		{
+			if ((bytes[i - 1] & 0x80) == 0)
+			{
+				skipZeroCount++;
+			}
+		}
+
+		newBytes = new byte[bytes.Length + prependZeroCount - skipZeroCount];
+		Array.Copy(bytes, 0, newBytes, prependZeroCount, bytes.Length - skipZeroCount);
+		SwapByteOrder(newBytes, prependZeroCount, bytes.Length - skipZeroCount);
+
+#if DEBUG && true
 		Buffer.TrackAllocation(newBytes.Length);
 		Buffer.TrackCopy(bytes.Length - skipZeroCount);
 #endif

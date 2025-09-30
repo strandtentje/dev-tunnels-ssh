@@ -615,9 +615,9 @@ internal class KeyExchangeService : SshService
 
 		// These values are formatted as bigints (with leading zeroes if the first bit is high)
 		// even though they might not really be bigints, depending on the key-exchange algorithm.
-		writer.Write(BigInt.FromByteArray(clientExchangeValue.ToArray(), unsigned: true));
-		writer.Write(BigInt.FromByteArray(serverExchangeValue.ToArray(), unsigned: true));
-		writer.Write(BigInt.FromByteArray(sharedSecret.ToArray(), unsigned: true));
+		writer.Write(BigInt.UnsignedBigEndianFromByteArray(clientExchangeValue.ToArray()));
+		writer.Write(BigInt.UnsignedBigEndianFromByteArray(serverExchangeValue.ToArray()));
+		writer.Write(BigInt.UnsignedBigEndianFromByteArray(sharedSecret.ToArray()));
 
 		Buffer result = new Buffer(keyExchange.DigestLength);
 		keyExchange.Sign(writer.ToBuffer(), result);

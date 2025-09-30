@@ -308,8 +308,8 @@ public class ECDsa : PublicKeyAlgorithm
 
 			// Reformat the signature as two big-ints as required by SSH.
 			var n = signatureBuffer.Count / 2;
-			var x = BigInt.FromByteArray(signatureBuffer.Slice(0, n).ToArray(), unsigned: true);
-			var y = BigInt.FromByteArray(signatureBuffer.Slice(n, n).ToArray(), unsigned: true);
+			var x = BigInt.UnsignedBigEndianFromByteArray(signatureBuffer.Slice(0, n).ToArray());
+			var y = BigInt.UnsignedBigEndianFromByteArray(signatureBuffer.Slice(n, n).ToArray());
 			var keySizeInBytes = (algorithm.KeySize + 7) / 8;
 			var signatureWriter = new SshDataWriter(signature);
 			signatureWriter.WriteBinary(x.ToBuffer(unsigned: true, length: keySizeInBytes + 1));

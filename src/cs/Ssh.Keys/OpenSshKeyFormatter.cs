@@ -298,12 +298,12 @@ public class OpenSshKeyFormatter : IKeyFormatter
 	private static void ExportRsaKey(IKeyPair keyPair, ref SshDataWriter keyWriter)
 	{
 		var parameters = ((Rsa.KeyPair)keyPair).ExportParameters(true);
-		keyWriter.Write(BigInt.FromByteArray(parameters.Modulus!, unsigned: true));
-		keyWriter.Write(BigInt.FromByteArray(parameters.Exponent!, unsigned: true));
-		keyWriter.Write(BigInt.FromByteArray(parameters.D!, unsigned: true));
-		keyWriter.Write(BigInt.FromByteArray(parameters.InverseQ!, unsigned: true));
-		keyWriter.Write(BigInt.FromByteArray(parameters.P!, unsigned: true));
-		keyWriter.Write(BigInt.FromByteArray(parameters.Q!, unsigned: true));
+		keyWriter.Write(BigInt.UnsignedBigEndianFromByteArray(parameters.Modulus!));
+		keyWriter.Write(BigInt.UnsignedBigEndianFromByteArray(parameters.Exponent!));
+		keyWriter.Write(BigInt.UnsignedBigEndianFromByteArray(parameters.D!));
+		keyWriter.Write(BigInt.UnsignedBigEndianFromByteArray(parameters.InverseQ!));
+		keyWriter.Write(BigInt.UnsignedBigEndianFromByteArray(parameters.P!));
+		keyWriter.Write(BigInt.UnsignedBigEndianFromByteArray(parameters.Q!));
 	}
 
 	private static void ExportECKey(IKeyPair keyPair, ref SshDataWriter keyWriter)
@@ -324,7 +324,7 @@ public class OpenSshKeyFormatter : IKeyFormatter
 		keyWriter.Write((byte)4); // Indicates uncompressed curve format
 		keyWriter.Write(parameters.Q.X);
 		keyWriter.Write(parameters.Q.Y);
-		keyWriter.Write(BigInt.FromByteArray(parameters.D!, unsigned: true));
+		keyWriter.Write(BigInt.UnsignedBigEndianFromByteArray(parameters.D!));
 	}
 
 	private static KeyData DecryptPrivate(KeyData keyData, string? passphrase)

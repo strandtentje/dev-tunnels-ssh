@@ -205,7 +205,7 @@ public class ECDiffieHellman : KeyExchangeAlgorithm
 						$"CNG ECDH shared secret is invalid length: {sharedSecretBytes.Length}");
 				}
 
-				return BigInt.FromByteArray(sharedSecretBytes, unsigned: true, littleEndian: true);
+				return BigInt.UnsignedLittleEndianFromByteArray(sharedSecretBytes);
 			}
 		}
 
@@ -226,7 +226,7 @@ public class ECDiffieHellman : KeyExchangeAlgorithm
 					$"OpenSSL ECDH shared secret is invalid length: {sharedSecretBytes.Length}");
 			}
 
-			return BigInt.FromByteArray(sharedSecretBytes, unsigned: true);
+			return BigInt.UnsignedBigEndianFromByteArray(sharedSecretBytes);
 		}
 
 		public void Sign(Buffer data, Buffer signature)

@@ -170,8 +170,8 @@ public class Pkcs1KeyFormatter : IKeyFormatter
 		var parameters = keyPair.ExportParameters(false);
 
 		var writer = new DerWriter();
-		writer.WriteInteger(BigInt.FromByteArray(parameters.Modulus!, unsigned: true));
-		writer.WriteInteger(BigInt.FromByteArray(parameters.Exponent!, unsigned: true));
+		writer.WriteInteger(BigInt.UnsignedBigEndianFromByteArray(parameters.Modulus!));
+		writer.WriteInteger(BigInt.UnsignedBigEndianFromByteArray(parameters.Exponent!));
 
 		var data = writer.ToArray();
 
@@ -190,14 +190,14 @@ public class Pkcs1KeyFormatter : IKeyFormatter
 
 		writer.WriteInteger(BigInt.FromInt32(0)); // version
 
-		writer.WriteInteger(BigInt.FromByteArray(parameters.Modulus!, unsigned: true));
-		writer.WriteInteger(BigInt.FromByteArray(parameters.Exponent!, unsigned: true));
-		writer.WriteInteger(BigInt.FromByteArray(parameters.D!, unsigned: true));
-		writer.WriteInteger(BigInt.FromByteArray(parameters.P!, unsigned: true));
-		writer.WriteInteger(BigInt.FromByteArray(parameters.Q!, unsigned: true));
-		writer.WriteInteger(BigInt.FromByteArray(parameters.DP!, unsigned: true));
-		writer.WriteInteger(BigInt.FromByteArray(parameters.DQ!, unsigned: true));
-		writer.WriteInteger(BigInt.FromByteArray(parameters.InverseQ!, unsigned: true));
+		writer.WriteInteger(BigInt.UnsignedBigEndianFromByteArray(parameters.Modulus!));
+		writer.WriteInteger(BigInt.UnsignedBigEndianFromByteArray(parameters.Exponent!));
+		writer.WriteInteger(BigInt.UnsignedBigEndianFromByteArray(parameters.D!));
+		writer.WriteInteger(BigInt.UnsignedBigEndianFromByteArray(parameters.P!));
+		writer.WriteInteger(BigInt.UnsignedBigEndianFromByteArray(parameters.Q!));
+		writer.WriteInteger(BigInt.UnsignedBigEndianFromByteArray(parameters.DP!));
+		writer.WriteInteger(BigInt.UnsignedBigEndianFromByteArray(parameters.DQ!));
+		writer.WriteInteger(BigInt.UnsignedBigEndianFromByteArray(parameters.InverseQ!));
 
 		var data = writer.ToArray();
 
