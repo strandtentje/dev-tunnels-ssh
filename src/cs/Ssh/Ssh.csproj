@@ -15,9 +15,25 @@ for .NET.
  - Compatible with common SSH software. (Tested against OpenSSH.)</Description>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'">
+	  <WarningLevel>0</WarningLevel>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net48|AnyCPU'">
+	  <WarningLevel>0</WarningLevel>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
+	  <WarningLevel>0</WarningLevel>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.1|AnyCPU'">
+	  <WarningLevel>0</WarningLevel>
+	</PropertyGroup>
+
 	<ItemGroup>
-		<PackageReference Include="System.Security.Cryptography.Cng" Version="4.7.0" PrivateAssets="All" Condition="'$(NetStandard20)'!='true'" />
-		<PackageReference Include="System.Security.Cryptography.OpenSsl" Version="4.7.0" PrivateAssets="All" Condition="'$(NetStandard20)'!='true'" />
+		<PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" PrivateAssets="All" Condition="'$(NetStandard20)'!='true'" />
+		<PackageReference Include="System.Security.Cryptography.OpenSsl" Version="5.0.0" PrivateAssets="All" Condition="'$(NetStandard20)'!='true'" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -26,5 +42,10 @@ for .NET.
 
 	<ItemGroup>
 		<None Remove="Microsoft.DevTunnels.Ssh.xml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.101" />
+	  <PackageReference Update="Nerdbank.GitVersioning" Version="3.9.50" />
 	</ItemGroup>
 </Project>
