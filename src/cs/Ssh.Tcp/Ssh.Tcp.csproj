@@ -22,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.101" />
+	  <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.102" />
 	  <PackageReference Update="Nerdbank.GitVersioning" Version="3.9.50" />
 	</ItemGroup>
 </Project>
